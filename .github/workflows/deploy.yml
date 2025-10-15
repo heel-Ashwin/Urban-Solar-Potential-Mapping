@@ -52,4 +52,4 @@ jobs:
 
       - name: Apply Terraform changes
         working-directory: terraform-deploy
-        run: terraform apply -auto-approve -var="key_name=your-keypair-name"
+        run: terraform apply -auto-approve -var="key_name=usp-key"
