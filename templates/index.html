@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -636,4 +637,644 @@
         }
     </script>
 </body>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Potential Forecast Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #0a0e1a;
+            color: #e8eaed;
+            min-height: 100vh;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .nav-bar {
+            background: rgba(15, 20, 30, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 1.25rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        .header {
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        .header h1 {
+            font-size: 2.75rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 0.75rem;
+            letter-spacing: -1px;
+        }
+
+        .header p {
+            font-size: 1.125rem;
+            color: #9ca3af;
+            font-weight: 400;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: #12182b;
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            opacity: 0;
+            animation: fadeInUp 0.6s ease forwards;
+            transition: border-color 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .card:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .metric-card {
+            background: #12182b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #3b82f6;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-unit {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 1.75rem;
+            letter-spacing: -0.3px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: #9ca3af;
+            margin-bottom: 0.625rem;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.03);
+            color: #e8eaed;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: rgba(59, 130, 246, 0.5);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 1rem;
+            background: #3b82f6;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            font-size: 0.9375rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #2563eb;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .ssi-container {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .ssi-score {
+            font-size: 4rem;
+            font-weight: 700;
+            color: #3b82f6;
+            line-height: 1;
+        }
+
+        .ssi-label {
+            font-size: 0.875rem;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0.5rem;
+        }
+
+        .system-type {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+
+        .info-value {
+            color: #e8eaed;
+            font-weight: 500;
+        }
+
+        #map {
+            height: 600px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .spinner {
+            border: 2px solid rgba(59, 130, 246, 0.1);
+            border-radius: 50%;
+            border-top: 2px solid #3b82f6;
+            width: 32px;
+            height: 32px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        .loading-text {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .map-container {
+            background: #12182b;
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-positive {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .badge-negative {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .leaflet-popup-content-wrapper {
+            background: #1e293b;
+            color: #e8eaed;
+            border-radius: 8px;
+            padding: 0;
+        }
+
+        .leaflet-popup-content {
+            margin: 1rem;
+        }
+
+        .leaflet-popup-tip {
+            background: #1e293b;
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            opacity: 0.5;
+        }
+
+        .section-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.06);
+            margin: 1.5rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-bar">
+        <div class="nav-content">
+            <div class="logo">Solar Analytics</div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="header">
+            <h1>Solar Potential Forecast</h1>
+            <p>Enterprise-grade solar energy analysis and forecasting platform</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card">
+                <h2 class="card-title">Location Parameters</h2>
+                <form id="predictForm">
+                    <div class="form-group">
+                        <label class="form-label">Latitude</label>
+                        <input type="number" step="0.0001" name="latitude" class="form-input" placeholder="28.6139" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Longitude</label>
+                        <input type="number" step="0.0001" name="longitude" class="form-input" placeholder="77.2090" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Installation Area (m²)</label>
+                        <input type="number" step="1" name="area" class="form-input" placeholder="100" value="100" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Analyze Location</button>
+                </form>
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <div class="loading-text">Processing data...</div>
+                </div>
+            </div>
+
+            <div class="card" id="resultCard" style="display: none;">
+                <h2 class="card-title">Solar Suitability Analysis</h2>
+                
+                <div class="ssi-container">
+                    <div class="ssi-score" id="ssiScore">0</div>
+                    <div class="ssi-label">Solar Suitability Index</div>
+                </div>
+
+                <div class="system-type" id="systemType">
+                    Loading...
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Current Solar Potential</span>
+                    <span class="info-value" id="currentSolar">0 Wh/m²</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Future Projection</span>
+                    <span class="info-value" id="futureSolar">0 Wh/m²</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Change Forecast</span>
+                    <span class="info-value" id="solarChange">
+                        <span class="badge badge-positive">0%</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="metrics-grid" id="metricsGrid" style="display: none;">
+            <div class="metric-card">
+                <div class="metric-label">Annual Energy Yield</div>
+                <div class="metric-value" id="annualYield">0</div>
+                <div class="metric-unit">kWh/year</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">System Size</div>
+                <div class="metric-value" id="systemSize">0</div>
+                <div class="metric-unit">kW</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">Payback Period</div>
+                <div class="metric-value" id="paybackPeriod">0</div>
+                <div class="metric-unit">years</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">Lifetime Savings</div>
+                <div class="metric-value" id="lifetimeSavings">$0</div>
+                <div class="metric-unit">25-year projection</div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;" id="detailsGrid" class="dashboard-grid">
+            <div class="card" style="display: none;" id="infrastructureCard">
+                <h2 class="card-title">Infrastructure Recommendations</h2>
+                
+                <div class="info-row">
+                    <span class="info-label">Solar Panels</span>
+                    <span class="info-value" id="numPanels">0 × 400W</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Inverter Capacity</span>
+                    <span class="info-value" id="inverterCapacity">0 kW</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Battery Storage</span>
+                    <span class="info-value" id="batteryCapacity">0 kWh</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Required Area</span>
+                    <span class="info-value" id="requiredArea">0 m²</span>
+                </div>
+            </div>
+
+            <div class="card" style="display: none;" id="roiCard">
+                <h2 class="card-title">Financial Analysis</h2>
+                
+                <div class="info-row">
+                    <span class="info-label">Total Investment</span>
+                    <span class="info-value" id="totalCost">$0</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Annual Savings</span>
+                    <span class="info-value" id="annualSavings">$0</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Elevation</span>
+                    <span class="info-value" id="elevation">0 m</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Avg. Precipitation</span>
+                    <span class="info-value" id="precipitation">0 mm</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="map-container">
+            <h2 class="card-title">Geographic Visualization</h2>
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <script>
+        var map = L.map('map', {
+            zoomControl: true,
+            attributionControl: true
+        }).setView([20.5937, 78.9629], 5);
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors © CARTO',
+            maxZoom: 19
+        }).addTo(map);
+
+        var marker = null;
+
+        document.getElementById('predictForm').onsubmit = async function(e) {
+            e.preventDefault();
+            
+            const loading = document.getElementById('loading');
+            const resultCard = document.getElementById('resultCard');
+            const metricsGrid = document.getElementById('metricsGrid');
+            const infrastructureCard = document.getElementById('infrastructureCard');
+            const roiCard = document.getElementById('roiCard');
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            
+            loading.style.display = 'block';
+            submitBtn.disabled = true;
+            resultCard.style.display = 'none';
+            metricsGrid.style.display = 'none';
+            infrastructureCard.style.display = 'none';
+            roiCard.style.display = 'none';
+            
+            const formData = new FormData(this);
+            const data = {
+                latitude: parseFloat(formData.get('latitude')),
+                longitude: parseFloat(formData.get('longitude')),
+                area: parseFloat(formData.get('area'))
+            };
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                setTimeout(() => {
+                    // Update SSI and Solar Info
+                    document.getElementById('ssiScore').textContent = result.solar_suitability_index;
+                    document.getElementById('systemType').textContent = result.system_type;
+                    document.getElementById('currentSolar').textContent = result.solar_potential_current.toLocaleString() + ' Wh/m²';
+                    document.getElementById('futureSolar').textContent = result.solar_potential_future.toLocaleString() + ' Wh/m²';
+                    
+                    const changeEl = document.getElementById('solarChange');
+                    const changeBadge = result.solar_change_percent >= 0 
+                        ? `<span class="badge badge-positive">+${result.solar_change_percent}%</span>`
+                        : `<span class="badge badge-negative">${result.solar_change_percent}%</span>`;
+                    changeEl.innerHTML = changeBadge;
+
+                    // Update Metrics
+                    document.getElementById('annualYield').textContent = result.annual_energy_yield.toLocaleString();
+                    document.getElementById('systemSize').textContent = result.roi.system_size_kw;
+                    document.getElementById('paybackPeriod').textContent = result.roi.payback_period;
+                    document.getElementById('lifetimeSavings').textContent = '$' + result.roi.lifetime_savings.toLocaleString();
+
+                    // Update Infrastructure
+                    document.getElementById('numPanels').textContent = result.infrastructure.num_panels + ' × 400W';
+                    document.getElementById('inverterCapacity').textContent = result.infrastructure.inverter_capacity_kw + ' kW';
+                    document.getElementById('batteryCapacity').textContent = result.infrastructure.battery_capacity_kwh + ' kWh';
+                    document.getElementById('requiredArea').textContent = result.infrastructure.estimated_area_sqm + ' m²';
+
+                    // Update ROI
+                    document.getElementById('totalCost').textContent = '$' + result.roi.total_cost.toLocaleString();
+                    document.getElementById('annualSavings').textContent = '$' + result.roi.annual_savings.toLocaleString();
+                    document.getElementById('elevation').textContent = result.elevation + ' m';
+                    document.getElementById('precipitation').textContent = result.precipitation.toFixed(1) + ' mm';
+
+                    // Show all cards
+                    resultCard.style.display = 'block';
+                    metricsGrid.style.display = 'grid';
+                    infrastructureCard.style.display = 'block';
+                    roiCard.style.display = 'block';
+                    loading.style.display = 'none';
+                    submitBtn.disabled = false;
+
+                    // Update map
+                    if (marker) {
+                        map.removeLayer(marker);
+                    }
+
+                    var blueIcon = L.divIcon({
+                        className: 'custom-marker',
+                        html: '<div style="background: #3b82f6; width: 20px; height: 20px; border-radius: 50%; border: 3px solid #1e293b; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);"></div>',
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10]
+                    });
+
+                    marker = L.marker([result.grid_latitude, result.grid_longitude], {icon: blueIcon}).addTo(map);
+                    marker.bindPopup(`
+                        <div style="padding: 0.5rem; min-width: 220px;">
+                            <div style="font-weight: 600; margin-bottom: 0.75rem; font-size: 0.875rem;">Solar Analysis</div>
+                            <div style="margin-bottom: 0.5rem;">
+                                <div style="font-size: 0.75rem; color: #9ca3af; margin-bottom: 0.25rem;">Current Potential</div>
+                                <div style="font-size: 1.5rem; color: #3b82f6; font-weight: 600;">${result.solar_potential_current.toLocaleString()}</div>
+                                <div style="color: #6b7280; font-size: 0.75rem;">Wh/m²</div>
+                            </div>
+                            <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                                <div style="font-size: 0.75rem; color: #9ca3af;">SSI: ${result.solar_suitability_index}/100</div>
+                            </div>
+                        </div>
+                    `).openPopup();
+
+                    map.setView([result.grid_latitude, result.grid_longitude], 12, {
+                        animate: true,
+                        duration: 1
+                    });
+                }, 600);
+
+            } catch (error) {
+                console.error('Error:', error);
+                loading.style.display = 'none';
+                submitBtn.disabled = false;
+                alert('Error fetching solar potential. Please try again.');
+            }
+        }
+    </script>
+</body>
+>>>>>>> b43b991 (Initial commit of local folder)
 </html>
