@@ -47,9 +47,9 @@ jobs:
           aws-region: ap-south-1
 
       - name: Initialize Terraform
-        working-directory: terraform-deploy
+        working-directory: terraform-deploy/ASHWIN
         run: terraform init
 
       - name: Apply Terraform changes
-        working-directory: terraform-deploy
+        working-directory: terraform-deploy/ASHWIN
         run: terraform apply -auto-approve -var="key_name=usp-key"
